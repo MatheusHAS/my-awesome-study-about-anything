@@ -1,23 +1,35 @@
-import express, { Express, Router } from 'express';
+import { Express, RequestHandler } from 'express';
 import { registerRouteFromModule } from 'src/application/express/actions/register-route';
+import { IHttpAdapter } from 'src/core/adapters/http.adapter';
+import { IModule } from 'src/core/interfaces/module.interface';
 
-export default class ExpressApplicationAdapter {
-  protected readonly _instance: Express;
-  protected readonly _port: number | string;
-
-  constructor(port: number | string) {
-    this._port = port;
-    this._instance = express();
+export default class ExpressHttpAdapter extends IHttpAdapter<Express, RequestHandler> {
+  constructor(instance: Express) {
+    super(instance);
   }
 
-  useModule(module: any) {
-    const router: Router = registerRouteFromModule(module);
-    this._instance.use('/', router);
+  public get(path: string, handler: RequestHandler): void {
+    this.instance.get(path, handler);
   }
 
-  listen() {
-    this._instance.listen(this._port, () => {
-      console.log(`Listening server on port ${this._port}`);
-    });
+  public post(path: string, handler: RequestHandler): void {
+    this.instance.post(path, handler);
+  }
+
+  public put(path: string, handler: RequestHandler): void {
+    this.instance.put(path, handler);
+  }
+
+  public delete(path: string, handler: RequestHandler): void {
+    this.instance.delete(path, handler);
+  }
+
+  public listen(port: string | number, callback?: () => void): void {
+    this.instance.listen(port, callback);
+  }
+
+  public useModule(module: object): void {
+    const router = registerRouteFromModule(module);
+    this.instance.use('/', router);
   }
 }

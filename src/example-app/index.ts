@@ -1,10 +1,14 @@
 import 'reflect-metadata';
-import ExpressApplicationAdapter from 'src/application/express/express.adapter';
+import Server from 'src/application/express';
 import RootModule from 'src/example-app/root.module';
 
 (async () => {
   const PORT = process.env.PORT || 3000;
-  const application = new ExpressApplicationAdapter(PORT);
-  application.useModule(RootModule);
-  application.listen();
+  const application = new Server(PORT);
+
+  application.start(() => {
+    console.log(`Listening server on ${PORT} port`);
+  });
+
+  application.httpServer.useModule(RootModule);
 })();
