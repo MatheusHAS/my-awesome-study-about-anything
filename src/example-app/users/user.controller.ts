@@ -4,14 +4,18 @@ import { Controller, Get, Post } from 'src/core';
 export default class UserController {
   @Get('list')
   list() {
-    console.log('listing users here');
-    return {
-      test: true,
-    };
+    console.log('Listing users! NICE JOB!');
+    return [
+      {
+        id: 1,
+        name: 'Matheus Azambuja',
+      },
+    ];
   }
 
-  @Post('list')
-  create() {
-    return { createTest: true };
+  @Post('create')
+  create(body: any) {
+    console.log('This is awesome!');
+    return { created: true, body };
   }
 }
