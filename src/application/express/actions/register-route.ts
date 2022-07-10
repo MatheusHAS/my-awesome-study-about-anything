@@ -1,67 +1,107 @@
 import { RequestHandler, Router } from 'express';
+import { isValidController, isValidModule, isValidRoute } from 'src/core';
 import { IModule } from 'src/core/interfaces/module.interface';
 import {
+  HTTP_METHOD_DELETE,
   HTTP_METHOD_GET,
   HTTP_METHOD_POST,
+  HTTP_METHOD_PUT,
   METHOD_METADATA,
   MODULE_METADATA,
   PATH_METADATA,
-  ROUTE_WATERMARK,
 } from 'src/core/tokens';
-import { routePathSanitize } from 'src/utils';
+import { Logger, routePathSanitize } from 'src/utils';
 
-export const registerRouteFromModule = (module: any): Router => {
-  const { controllers, modules }: IModule = getModuleMetadata(module);
-  let allControllers: any[] = controllers || [];
+const getPath = (basePath: string | undefined, routePath: string) => {
+  if (!routePath && !basePath) {
+    routePath = '/';
+  } else if (basePath && !routePath) {
+    routePath = '';
+  }
 
-  // Only for 1st depth - for tests
-  modules?.forEach(internalModule => {
-    const metadata = getModuleMetadata(internalModule);
-    if (metadata.controllers) {
-      allControllers = [...allControllers, ...metadata.controllers];
+  return basePath ? routePathSanitize(`/${basePath}/${routePath}`) : routePathSanitize(routePath);
+};
+
+const updateRouterUsingController = (router: Router, basePath: string, controllerClass: any) => {
+  if (!isValidController(controllerClass)) {
+    Logger(controllerClass, 'Cant load a INVALID CONTROLLER');
+    return;
+  }
+
+  const functions = getFunctionsFromClass(controllerClass);
+
+  if (!functions.length) {
+    Logger(controllerClass, 'Without routes to load, skipped.');
+    return;
+  }
+
+  functions.forEach(functionName => {
+    const handler = controllerClass.prototype[functionName];
+    const methodMetadata = Reflect.getMetadata(METHOD_METADATA, handler);
+    if (!isValidRoute(handler)) {
+      Logger(controllerClass, 'Cant load a not is valid route, skipped.');
+      return;
+    }
+
+    if (!methodMetadata) {
+      Logger(controllerClass, `The method ${functionName} dont have a verbs (GET, POST, PUT or DELETE), skipping.`);
+      return;
+    }
+
+    let pathMetadata = Reflect.getMetadata(PATH_METADATA, handler);
+
+    const routePath = getPath(basePath, pathMetadata);
+    const routeRequestHandler: RequestHandler = (req: any, res: any) => {
+      return res.send(handler(req.body));
+    };
+
+    if (methodMetadata === HTTP_METHOD_GET) {
+      Logger(controllerClass, `[GET] ${routePath}`);
+      router.get(routePath, routeRequestHandler);
+    } else if (methodMetadata === HTTP_METHOD_POST) {
+      Logger(controllerClass, `[POST] ${routePath}`);
+      router.post(routePath, routeRequestHandler);
+    } else if (methodMetadata === HTTP_METHOD_PUT) {
+      Logger(controllerClass, `[PUT] ${routePath}`);
+      router.put(routePath, routeRequestHandler);
+    } else if (methodMetadata === HTTP_METHOD_DELETE) {
+      Logger(controllerClass, `[DELETE] ${routePath}`);
+      router.delete(routePath, routeRequestHandler);
     }
   });
+};
 
-  const router = Router();
+export const createRouterFromModule = (moduleClass: object, initialRouter?: any): Router => {
+  const { controllers, modules }: IModule = getModuleMetadata(moduleClass);
 
-  allControllers.forEach(controller => {
-    const baseRoutePath = Reflect.getMetadata(PATH_METADATA, controller);
-    const functions = getFunctionsFromClass(controller);
+  const mainRouter = initialRouter || Router();
 
-    // try get route to all controller methods
-    functions.forEach((functionName: string) => {});
-    for (const functionName of functions) {
-      const handler = controller.prototype[functionName];
-      console.log('functionName', functionName);
-      const isRoute = Reflect.getMetadata(ROUTE_WATERMARK, handler);
-      if (!isRoute) {
+  // First - Setup controllers
+  if (controllers) {
+    controllers.forEach((controller: any) => {
+      let basePathMetadata = Reflect.getMetadata(PATH_METADATA, controller);
+      if (!basePathMetadata) {
+        basePathMetadata = '/';
+      }
+      updateRouterUsingController(mainRouter, basePathMetadata, controller);
+    });
+  }
+
+  // Recursive module loader
+  if (modules) {
+    modules.forEach((module: any) => {
+      if (!isValidModule(module)) {
+        Logger(module, 'Cant load a invalid module.');
         return;
       }
 
-      const routePathMetadata = Reflect.getMetadata(PATH_METADATA, handler);
-      const methodMetadata = Reflect.getMetadata(METHOD_METADATA, handler);
+      const moduleRouter = Router();
+      createRouterFromModule(module, moduleRouter);
+      mainRouter.use(moduleRouter);
+    });
+  }
 
-      const routePath = baseRoutePath
-        ? routePathSanitize(`/${baseRoutePath}/${routePathMetadata}`)
-        : routePathSanitize(routePathMetadata);
-
-      console.log('routePathMetadata', routePathMetadata);
-
-      const routeRequestHandler: RequestHandler = (req: any, res: any) => {
-        res.send(handler());
-      };
-
-      if (methodMetadata === HTTP_METHOD_GET) {
-        console.log('registering get', routePath);
-        router.get(routePath, routeRequestHandler);
-      } else if (methodMetadata === HTTP_METHOD_POST) {
-        console.log('registering post', routePath);
-        router.post(routePath, routeRequestHandler);
-      }
-    }
-  });
-
-  return router;
+  return mainRouter;
 };
 
 const getFunctionsFromClass = (classElement: any): string[] => {
