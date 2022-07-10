@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "baseUrl": "./",
+    "rootDir": "./",
+    // "rootDir": "./src",
+    // "baseUrl": "./",
+    // "rootDirs": [],
+    // "typeRoots": [],
+    "types": ["reflect-metadata"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true
+  }
+}
