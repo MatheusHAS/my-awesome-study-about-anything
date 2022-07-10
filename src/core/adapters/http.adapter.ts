@@ -1,5 +1,3 @@
-import { IModule } from 'src/core/interfaces/module.interface';
-
 export abstract class IHttpAdapter<TServerInstance, TRequestHandler> {
   protected readonly instance: TServerInstance;
 
@@ -19,4 +17,5 @@ export abstract class IHttpAdapter<TServerInstance, TRequestHandler> {
   public abstract listen(port: string | number, callback?: () => void): void;
 
   public abstract useModule(module: object): void;
+  public abstract useMiddleware(middleware: object): void;
 }

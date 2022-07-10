@@ -1,11 +1,14 @@
 import { Express, RequestHandler } from 'express';
-import { registerRouteFromModule } from 'src/application/express/actions/register-route';
+import { createRouterFromModule } from 'src/application/express/actions/register-route';
 import { IHttpAdapter } from 'src/core/adapters/http.adapter';
-import { IModule } from 'src/core/interfaces/module.interface';
 
 export default class ExpressHttpAdapter extends IHttpAdapter<Express, RequestHandler> {
   constructor(instance: Express) {
     super(instance);
+  }
+
+  public useMiddleware(middleware: any) {
+    this.instance.use(middleware);
   }
 
   public get(path: string, handler: RequestHandler): void {
@@ -29,7 +32,7 @@ export default class ExpressHttpAdapter extends IHttpAdapter<Express, RequestHan
   }
 
   public useModule(module: object): void {
-    const router = registerRouteFromModule(module);
+    const router = createRouterFromModule(module);
     this.instance.use('/', router);
   }
 }
