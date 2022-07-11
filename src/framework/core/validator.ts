@@ -1,4 +1,4 @@
-import { CONTROLLER_WATERMARK, MODULE_WATERMARK, ROUTE_WATERMARK } from 'src/core/tokens';
+import { CONTROLLER_WATERMARK, MODULE_WATERMARK, ROUTE_WATERMARK } from 'src/framework/core/tokens';
 
 export const isValidController = (target: any) => {
   return !!Reflect.getMetadata(CONTROLLER_WATERMARK, target);

@@ -1,6 +1,6 @@
 import { Express, RequestHandler } from 'express';
-import { createRouterFromModule } from 'src/application/express/actions/register-route';
-import { IHttpAdapter } from 'src/core/adapters/http.adapter';
+import { createRouterFromModule } from 'src/framework/application/express/actions/register-route';
+import { IHttpAdapter } from 'src/framework/core/adapters/http.adapter';
 
 export default class ExpressHttpAdapter extends IHttpAdapter<Express, RequestHandler> {
   constructor(instance: Express) {

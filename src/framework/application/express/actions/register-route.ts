@@ -1,6 +1,6 @@
 import { RequestHandler, Router } from 'express';
-import { isValidController, isValidModule, isValidRoute } from 'src/core';
-import { IModule } from 'src/core/interfaces/module.interface';
+import { isValidController, isValidModule, isValidRoute } from 'src/framework/core';
+import { IModule } from 'src/framework/core/interfaces/module.interface';
 import {
   HTTP_METHOD_DELETE,
   HTTP_METHOD_GET,
@@ -9,8 +9,8 @@ import {
   METHOD_METADATA,
   MODULE_METADATA,
   PATH_METADATA,
-} from 'src/core/tokens';
-import { Logger, routePathSanitize } from 'src/utils';
+} from 'src/framework/core/tokens';
+import { Logger, routePathSanitize } from 'src/framework/utils';
 
 const getPath = (basePath: string | undefined, routePath: string) => {
   if (!routePath && !basePath) {

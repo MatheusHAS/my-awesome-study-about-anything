@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from 'src/core';
+import { Controller, Get, Post } from 'src/framework/core';
 
 @Controller('users')
 export default class UserController {
