@@ -1,10 +1,10 @@
 import { Express, RequestHandler } from 'express';
-import { createRouterFromModule } from 'src/framework/application/express/actions/register-route';
+import ExpressRegisterModule from 'src/framework/application/express/express-register-module';
 import { IHttpAdapter } from 'src/framework/core/adapters/http.adapter';
 
 export default class ExpressHttpAdapter extends IHttpAdapter<Express, RequestHandler> {
   constructor(instance: Express) {
-    super(instance);
+    super(instance, new ExpressRegisterModule());
   }
 
   public useMiddleware(middleware: any) {
@@ -32,7 +32,7 @@ export default class ExpressHttpAdapter extends IHttpAdapter<Express, RequestHan
   }
 
   public useModule(module: object): void {
-    const router = createRouterFromModule(module);
+    const router = this.registrationModule.loadModule(module);
     this.instance.use('/', router);
   }
 }

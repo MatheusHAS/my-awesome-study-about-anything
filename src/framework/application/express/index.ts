@@ -1,14 +1,9 @@
-import ExpressHttpAdapter from 'src/framework/application/express/express.adapter';
-import { IHttpAdapter } from 'src/framework/core/adapters/http.adapter';
 import express, { RequestHandler } from 'express';
+import { IHttpAdapter } from 'src/framework/core/adapters/http.adapter';
+import ExpressHttpAdapter from 'src/framework/application/express/express-http.adapter';
+import { TServerConfigs } from 'src/framework/core/types';
 
-export type TServerConfigs = {
-  port: string | number;
-  middlewares?: any[];
-  rootModule: any;
-};
-
-export default class HttpServer {
+export default class ExpressHttpServer {
   readonly httpServer: IHttpAdapter<express.Express, RequestHandler>;
   readonly port: string | number;
 

@@ -1,8 +1,12 @@
+import RegisterModuleAbstraction from 'src/framework/application/register-module.abstract';
+
 export abstract class IHttpAdapter<TServerInstance, TRequestHandler> {
   protected readonly instance: TServerInstance;
+  readonly registrationModule: RegisterModuleAbstraction;
 
-  constructor(instance: TServerInstance) {
+  constructor(instance: TServerInstance, registrationModule: RegisterModuleAbstraction) {
     this.instance = instance;
+    this.registrationModule = registrationModule;
   }
 
   public getInstance(): TServerInstance {
